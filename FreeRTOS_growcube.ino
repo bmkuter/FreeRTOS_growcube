@@ -4,6 +4,8 @@
  Author:	Benny
 */
 
+#include "pwm_device.h"
+
 // Use only core 1 for demo purposes
 #if CONFIG_FREERTOS_UNICORE
 #include <Adafruit_INA260.h>
@@ -11,45 +13,29 @@
 #include <Adafruit_I2CRegister.h>
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_BusIO_Register.h>
-#include "pwm_device.h"
 static const BaseType_t app_cpu = 0;
 #else
 static const BaseType_t app_cpu = 1;
 #endif
 
-// LED rates
-static const int rate_1 = 10;  // ms
-static const int rate_2 = 323;  // ms
-
-// Pins
-static const int led_pin = LED_BUILTIN;
-
-// Our task: blink an LED at one rate
-void toggleLED_1(void* parameter) {
-    while (1) {
-        digitalWrite(led_pin, HIGH);
-        vTaskDelay(rate_1 / portTICK_PERIOD_MS);
-        digitalWrite(led_pin, LOW);
-        vTaskDelay(rate_1 / portTICK_PERIOD_MS);
-    }
-}
-
-// Our task: blink an LED at another rate
-void toggleLED_2(void* parameter) {
-    while (1) {
-        digitalWrite(led_pin, HIGH);
-        vTaskDelay(rate_2 / portTICK_PERIOD_MS);
-        digitalWrite(led_pin, LOW);
-        vTaskDelay(rate_2 / portTICK_PERIOD_MS);
-    }
-}
 
 void setup() {
 
-    // Configure pin
+// Setting up ESP32 Analog Write. Make into function using a pwm_device struct later
+    // setting PWM properties
+    int freq = 5000;
+    int ledChannel = 0;
+    int resolution = 8;
+    // configure LED PWM functionalitites
+    ledcSetup(ledChannel, freq, resolution);
+
+    // attach the channel to the GPIO to be controlled
+    ledcAttachPin(12, ledChannel);
+
+// Configure pin
     pinMode(led_pin, OUTPUT);
 
-    // Task to run forever
+// Task to run forever
     xTaskCreatePinnedToCore(  // Use xTaskCreate() in vanilla FreeRTOS
         toggleLED_1,  // Function to be called
         "Toggle 1",   // Name of task

@@ -11,6 +11,7 @@
 
 #include <Adafruit_INA260.h> /* https://www.adafruit.com/product/4226 */
 
+
 #ifndef PWM_DEVICE
 #define PWM_DEVICE
 
@@ -19,6 +20,10 @@ typedef struct PWM_device {
 	uint8_t min;
 	uint8_t max;
 	uint8_t motor_status;
+	uint8_t init; // Flag to check if the pwm_device's ledcSetup has been properly initialized. 
+	uint8_t pwm_channel;
+	uint8_t reserved_1;
+	uint8_t reserved_2;
 } PWM_device;
 
 #endif // !PWM_DEVICE
@@ -43,6 +48,7 @@ extern PWM_device food_pump;
 extern PWM_device air_pump;
 extern PWM_device LED;
 
+extern void PWM_init(PWM_device* pwm_device);
 extern void PWM_calibration(PWM_device* pwm_device);
 extern void PWM_set_percent(PWM_device* pwm_device, uint8_t percent);
 extern void dose_food(PWM_device* pwm_device, uint8_t ml);
@@ -50,5 +56,13 @@ extern void fill_tank(PWM_device* pwm_device);
 extern void empty_tank(PWM_device* pwm_device);
 extern void toggle_light(PWM_device* pwm_device);
 extern void calibrate_power_draw();
+
+//Example Functions
+extern void toggleLED_1(void* parameter);
+extern void toggleLED_2(void* parameter);
+
+extern int rate_1;
+extern int rate_2;
+extern int led_pin;
 
 #endif // !_PWM_DEVICE_h
