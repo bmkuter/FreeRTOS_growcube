@@ -23,18 +23,21 @@ void setup() {
 
 // Setting up ESP32 Analog Write. Make into function using a pwm_device struct later
     // setting PWM properties
-    int freq = 5000;
-    int ledChannel = 0;
-    int resolution = 8;
+    test_device.freq = 5000;
+    test_device.pwm_channel = 0;
+    test_device.resolution = 8;
     // configure LED PWM functionalitites
-    ledcSetup(ledChannel, freq, resolution);
+    ledcSetup(test_device.pwm_channel, test_device.freq, test_device.resolution);
 
     // attach the channel to the GPIO to be controlled
-    ledcAttachPin(12, ledChannel);
+    ledcAttachPin(test_device.pin, test_device.pwm_channel);
 
 // Configure pin
     pinMode(led_pin, OUTPUT);
 
+    PWM_set_percent(&test_device, 50);
+
+/*
 // Task to run forever
     xTaskCreatePinnedToCore(  // Use xTaskCreate() in vanilla FreeRTOS
         toggleLED_1,  // Function to be called
@@ -57,6 +60,7 @@ void setup() {
 
 // If this was vanilla FreeRTOS, you'd want to call vTaskStartScheduler() in
 // main after setting up your tasks.
+*/
 }
 
 void loop() {

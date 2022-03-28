@@ -13,6 +13,7 @@ int rate_2 = 323;  // ms
 int led_pin = LED_BUILTIN;
 
 // Initializing devices
+PWM_device test_device = { 13, 145, 255, 0, 5000, 8 };
 PWM_device water_pump_source = { 33, 145, 255, 0, 0, 0 };
 PWM_device water_pump_drain = { 22, 145, 255,0, 0, 1 };
 PWM_device food_pump = { 14, 180, 255, 0, 0, 2 };
@@ -75,4 +76,17 @@ void PWM_set_percent(PWM_device* pwm_device, uint8_t percent)
         return;
     }
     return;
+}
+
+void fill_tank(PWM_device* pwm_device)
+{
+    // Issued by scheduler into an RTOS task, which deletes itself at the end. When next needed, scheduler will create a new task. 
+    /* Time between start and stop of pumping. */
+    while (1)
+    {
+        PWM_set_percent(pwm_device, 80);
+        vTaskDelay(pwm_device->on_time / portTICK_PERIOD_MS);
+        PWM_set_percent(pwm_device, 0);
+        vTaskDelay(pwm_device->off_time / portTICK_PERIOD_MS);
+    }
 }
