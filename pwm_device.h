@@ -19,7 +19,7 @@ typedef struct PWM_device {
 	uint8_t pin;
 	uint8_t min;
 	uint8_t max;
-	uint8_t motor_status;
+	uint8_t motor_status; //0 off, 1 on
 	uint8_t init; // Flag to check if the pwm_device's ledcSetup has been properly initialized. 
 	uint8_t pwm_channel;
 	uint32_t freq;

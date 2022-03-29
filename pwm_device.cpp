@@ -34,6 +34,7 @@ void toggleLED_1(void* parameter) {
 void toggleLED_2(void* parameter) {
     while (1) {
         digitalWrite(led_pin, HIGH);
+
         vTaskDelay(rate_2 / portTICK_PERIOD_MS);
         digitalWrite(led_pin, LOW);
         vTaskDelay(rate_2 / portTICK_PERIOD_MS);
@@ -84,9 +85,11 @@ void fill_tank(PWM_device* pwm_device)
     /* Time between start and stop of pumping. */
     while (1)
     {
-        PWM_set_percent(pwm_device, 80);
+        PWM_set_percent(pwm_device, 80); 
+        pwm_device->motor_status = 1;
         vTaskDelay(pwm_device->on_time / portTICK_PERIOD_MS);
         PWM_set_percent(pwm_device, 0);
+        pwm_device->motor_status = 0;
         vTaskDelay(pwm_device->off_time / portTICK_PERIOD_MS);
     }
 }
