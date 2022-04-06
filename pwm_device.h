@@ -10,12 +10,20 @@
 #endif
 
 #include <Adafruit_INA260.h> /* https://www.adafruit.com/product/4226 */
+#include <LiquidCrystal_I2C.h>
+#include "password.h"
+#include <WiFi.h>
+
+
+#define WIFI_TIMEOUT_MS 20000 // 20 second WiFi connection timeout
+#define WIFI_RECOVER_TIME_MS 30000 // Wait 30 seconds after a failed connection attempt
 
 
 #ifndef PWM_DEVICE
 #define PWM_DEVICE
 
 typedef struct PWM_device {
+	uint8_t enabled;
 	uint8_t pin;
 	uint8_t min;
 	uint8_t max;
@@ -43,6 +51,7 @@ typedef struct power_consumption
 
 #endif // !POWER_CONSUMPTION
 
+//PWM Devices
 extern power_consumption system_device_health;
 extern PWM_device water_pump_source;
 extern PWM_device water_pump_drain;
@@ -51,19 +60,42 @@ extern PWM_device air_pump;
 extern PWM_device LED;
 extern PWM_device test_device;
 
+
+//Wifi & Communication Functions
+void keep_wifi_alive(void* parameter);
+void wifi_poll_server();
+
+//Motor Management Functions
+extern void restart_task(
+	TaskFunction_t pvTaskCode,
+	const char* const pcName,
+	const uint32_t usStackDepth,
+	void* const pvParameters,
+	UBaseType_t uxPriority,
+	TaskHandle_t* const pvCreatedTask);
+extern void turn_on_air_pump(void* pwm_device);
 extern void PWM_init(PWM_device* pwm_device);
-extern void PWM_calibration(PWM_device* pwm_device);
+extern void PWM_calibration(void* pwm_device);
 extern void PWM_set_percent(PWM_device* pwm_device, uint8_t percent);
-extern void dose_food(PWM_device* pwm_device, uint8_t ml);
-extern void fill_tank(PWM_device* pwm_device, uint32_t fill_time);
-extern void empty_tank(PWM_device* pwm_device);
-extern void toggle_light(PWM_device* pwm_device);
+extern void dose_food(void* pwm_device, uint8_t ml); // USE A LOAD CELL TO DETERMINE WATER DOSAGE
+extern void PWM_timer_handler(void* pwm_device);
+extern void toggle_light(void* pwm_device);
 extern void calibrate_power_draw();
-extern void turn_on(PWM_device* pwm_device);
+extern void turn_on(void* pwm_device);
+
+//Scheduling Functions
+extern void delete_pwm_tasks();		//Used to reset any tasks if needed in combination with start_pwm_tasks();
+extern void start_pwm_tasks();
+
+//Screen Functions
+extern void i2c_scanner();
+extern void physical_controls(void* parameter);
 
 //Example Functions
+// Used to model dynamics
 extern void toggleLED_1(void* parameter);
 extern void toggleLED_2(void* parameter);
+extern void change_setting(void* pwm_device);
 
 extern int rate_1;
 extern int rate_2;
