@@ -22,12 +22,12 @@ void setup() {
 
     // I2C stuff
     i2c_scanner();
-
+    Serial.printf("water_pump_drain->pwm_channel = %d", ( & water_pump_drain)->pwm_channel);
     PWM_init(&water_pump_source);
     PWM_init(&water_pump_drain);
     PWM_init(&food_pump);
-    PWM_init(&air_pump);
-    PWM_init(&LED);
+    //PWM_init(&air_pump);
+    //PWM_init(&LED);
     PWM_init(&test_device);
 
 
@@ -43,7 +43,7 @@ void setup() {
     pinMode(led_pin, OUTPUT);
 
 // Pump tasks
-    /*
+    
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
         "fill tank",   // Name of task
@@ -71,12 +71,12 @@ void setup() {
     
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
-        "light",   // Name of task
+        "food",   // Name of task
         1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
-        &LED,         // Parameter to pass to function
+        &food_pump,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         NULL);         // Task handle
-    */
+    
 
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         toggleLED_1,  // Function to be called
@@ -87,7 +87,7 @@ void setup() {
         &toggleLED_1_handle          // Task handle
         );
 
-    /*
+    
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         physical_controls,  // Function to be called
         "physical_controls",   // Name of task
@@ -96,7 +96,7 @@ void setup() {
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         &physical_controls_handle          // Task handle
     );
-    */
+    
 
     xTaskCreatePinnedToCore(  // Use xTaskCreate() in vanilla FreeRTOS
         keep_wifi_alive,

@@ -60,12 +60,12 @@ typedef struct PWM_device {
     uint32_t off_time;
 } PWM_device;
 */
-PWM_device test_device =        { 1, 21, 0,   255, 5 , 0, 0, 0, 5000, 8, 1000, 1000 };
-PWM_device water_pump_source =  { 1, 33, 145, 255, 35, 0, 0, 1, 5000, 8, 2000, 2000 };
-PWM_device water_pump_drain =   { 1, 22, 145, 255, 35, 0, 0, 2, 5000, 8, 2000, 2000 };
-PWM_device food_pump =          { 1, 14, 145, 255, 35, 0, 0, 3, 5000, 8, 2000, 2000 };
-PWM_device air_pump =           { 1, 32, 145, 255, 35, 0, 0, 4, 5000, 8, 2000, 2000 };
-PWM_device LED =                { 1, 15, 145, 255, 35, 0, 0, 5, 5000, 8, 2000, 2000 };;
+PWM_device test_device =        { 1, 21, 0, 255, 5 , 0, 0, 0, 5000, 8, 1000, 1000 };
+PWM_device water_pump_source =  { 1, 17, 0, 255, 7, 0, 0, 1, 5000, 8, 500, 200 };
+PWM_device water_pump_drain =   { 1, 16, 0, 255, 1, 0, 0, 2, 5000, 8, 100, 500 };
+PWM_device food_pump =          { 1, 19, 0, 255, 10, 0, 0, 3, 5000, 8, 1520, 156 };
+PWM_device air_pump =           { 1, 32, 0, 255, 35, 0, 0, 4, 5000, 8, 2000, 2000 };
+PWM_device LED =                { 1, 15, 0, 255, 35, 0, 0, 5, 5000, 8, 2000, 2000 };;
 
 // Our task: blink an LED at one rate
 void toggleLED_1(void* parameter) {
@@ -131,7 +131,7 @@ void PWM_timer_handler(void* pwm_device)
         if (local_PWM_device->enabled == 1 )
         {
             //Serial.printf("local_PWM_device->on_time = %d\n", local_PWM_device->on_time);
-            PWM_set_percent(local_PWM_device, 80);
+            PWM_set_percent(local_PWM_device, local_PWM_device->pulse_width);
             vTaskDelay(local_PWM_device->on_time / portTICK_PERIOD_MS);
             PWM_set_percent(local_PWM_device, 0);
             vTaskDelay(local_PWM_device->off_time / portTICK_PERIOD_MS);
@@ -205,12 +205,11 @@ extern void change_setting(void* pwm_device)
 
 void PWM_init(PWM_device* local_PWM_device)
 {
-    // setting PWM properties
-    local_PWM_device->freq = 5000;
-    local_PWM_device->pwm_channel = 0;
-    local_PWM_device->resolution = 8;
     // configure LED PWM functionalitites
-    ledcSetup(local_PWM_device->pwm_channel, local_PWM_device->freq, local_PWM_device->resolution);
+    if (ledcSetup(local_PWM_device->pwm_channel, local_PWM_device->freq, local_PWM_device->resolution) == 0)
+    {
+        Serial.printf("Error in PWM_init %d", local_PWM_device->pin);
+    }
 
     // attach the channel to the GPIO to be controlled
     ledcAttachPin(local_PWM_device->pin, local_PWM_device->pwm_channel);
