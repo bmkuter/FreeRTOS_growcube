@@ -13,6 +13,8 @@
 #include <LiquidCrystal_I2C.h>
 #include "password.h"
 #include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 
 #define WIFI_TIMEOUT_MS 20000 // 20 second WiFi connection timeout
@@ -27,11 +29,12 @@ typedef struct PWM_device {
 	uint8_t pin;
 	uint8_t min;
 	uint8_t max;
+	uint8_t pulse_width;
 	uint8_t motor_status; //0 off, 1 on
-	uint8_t init; // Flag to check if the pwm_device's ledcSetup has been properly initialized. 
+	uint8_t init; // Flag to check if the pwm_device's ledcSetup has been properly initialized.
 	uint8_t pwm_channel;
 	uint32_t freq;
-	uint8_t resolution; 
+	uint8_t resolution;
 	uint32_t on_time; // Used to indicate how long device should run for. May be changed often.
 	uint32_t off_time;
 } PWM_device;
@@ -60,10 +63,37 @@ extern PWM_device air_pump;
 extern PWM_device LED;
 extern PWM_device test_device;
 
+//Task Handles
+extern TaskHandle_t toggleLED_1_handle;
+extern TaskHandle_t keep_wifi_alive_handle;
+extern TaskHandle_t wifi_poll_server_handle;
+extern TaskHandle_t wifi_poll_server_json_handle;
+extern TaskHandle_t physical_controls_handle;
+
+//Task Handler Structs
+typedef struct task_fields
+{
+	TaskFunction_t pvTaskCode;
+	const char* const pcName;
+	const uint32_t usStackDepth;
+	PWM_device PWM_device_ptr; //Cast as void*
+	UBaseType_t uxPriority;
+	TaskHandle_t* const pvCreatedTask;
+} task_fields;
+extern task_fields water_pump_source_task_field;
+extern task_fields water_pump_drain_task_field;
+extern task_fields food_pump_task_field;
+extern task_fields air_pump_task_field;
+extern task_fields test_device_task_field;
+
 
 //Wifi & Communication Functions
-void keep_wifi_alive(void* parameter);
-void wifi_poll_server();
+extern HTTPClient http;
+extern String server_name;
+extern int pod_id;
+extern void keep_wifi_alive(void* parameter);
+extern void wifi_poll_server(void* parameter);
+extern void wifi_poll_server_json(void* parameter);
 
 //Motor Management Functions
 extern void restart_task(
@@ -82,6 +112,7 @@ extern void PWM_timer_handler(void* pwm_device);
 extern void toggle_light(void* pwm_device);
 extern void calibrate_power_draw();
 extern void turn_on(void* pwm_device);
+extern void simple_pwm_function();
 
 //Scheduling Functions
 extern void delete_pwm_tasks();		//Used to reset any tasks if needed in combination with start_pwm_tasks();
@@ -100,5 +131,6 @@ extern void change_setting(void* pwm_device);
 extern int rate_1;
 extern int rate_2;
 extern int led_pin;
+extern volatile int delay_time;
 
 #endif // !_PWM_DEVICE_h
