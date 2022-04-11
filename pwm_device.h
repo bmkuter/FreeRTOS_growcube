@@ -113,6 +113,7 @@ extern void toggle_light(void* pwm_device);
 extern void calibrate_power_draw();
 extern void turn_on(void* pwm_device);
 extern void simple_pwm_function();
+extern void calculate_linear_operating_region(PWM_device* pwm_device);
 
 //Scheduling Functions
 extern void delete_pwm_tasks();		//Used to reset any tasks if needed in combination with start_pwm_tasks();

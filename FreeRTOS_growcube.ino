@@ -13,16 +13,16 @@ void setup() {
 
     Serial.begin(9600);
     Serial.setTimeout(5);
+    delay(250);
     Wire.begin();
 
     // Set WiFi to station mode and disconnect from an AP if it was previously connected
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    delay(100);;
+    Wire.begin();
 
     // I2C stuff
     i2c_scanner();
-    Serial.printf("water_pump_drain->pwm_channel = %d", ( & water_pump_drain)->pwm_channel);
     PWM_init(&water_pump_source);
     PWM_init(&water_pump_drain);
     PWM_init(&food_pump);
@@ -59,7 +59,7 @@ void setup() {
         &water_pump_drain,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         NULL);         // Task handle
-
+    /*
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         turn_on_air_pump,  // Function to be called
         "air pump",   // Name of task
@@ -67,7 +67,7 @@ void setup() {
         &air_pump,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         NULL);         // Task handle
-
+*/
     
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
@@ -87,7 +87,7 @@ void setup() {
         &toggleLED_1_handle          // Task handle
         );
 
-    
+    /*
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         physical_controls,  // Function to be called
         "physical_controls",   // Name of task
@@ -96,7 +96,7 @@ void setup() {
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         &physical_controls_handle          // Task handle
     );
-    
+    */
 
     xTaskCreatePinnedToCore(  // Use xTaskCreate() in vanilla FreeRTOS
         keep_wifi_alive,

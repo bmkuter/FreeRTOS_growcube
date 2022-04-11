@@ -359,7 +359,7 @@ void wifi_poll_server(void* parameter)
 void wifi_poll_server_json(void* parameter)
 {
     //ArduinoJson Stuff
-    StaticJsonDocument<128> doc;
+    StaticJsonDocument<512> doc;
 
     while (1)
     {
@@ -377,23 +377,49 @@ void wifi_poll_server_json(void* parameter)
                     Serial.println(error.c_str());
                     return;
                 }
-                uint32_t pod_id = doc["pod_id"]; // 1
-                uint32_t delay_on = doc["delay_on"]; // 1000
-                uint32_t delay_off = doc["delay_off"]; // 1000
-                uint32_t pulse_width = doc["pulse_width"]; // 1000
+                //Configure via https://arduinojson.org/v6/assistant/
+                int id = doc["id"]; // 1
+                int delay_on = doc["delay_on"]; // 1000
+                int delay_off = doc["delay_off"]; // 1000
+                int pulse_width = doc["pulse_width"]; // 100
 
+                JsonObject source = doc["source"];
+                int source_delay_on = source["delay_on"]; // 1000
+                int source_delay_off = source["delay_off"]; // 1000
+                int source_pulse_width = source["pulse_width"]; // 100
+
+                JsonObject drain = doc["drain"];
+                int drain_delay_on = drain["delay_on"]; // 1000
+                int drain_delay_off = drain["delay_off"]; // 1000
+                int drain_pulse_width = drain["pulse_width"]; // 100
+
+                JsonObject food = doc["food"];
+                int food_delay_on = food["delay_on"]; // 1000
+                int food_delay_off = food["delay_off"]; // 1000
+                int food_pulse_width = food["pulse_width"]; // 100
+
+                JsonObject air = doc["air"];
+                int air_delay_on = air["delay_on"]; // 1000
+                int air_delay_off = air["delay_off"]; // 1000
+                int air_pulse_width = air["pulse_width"]; // 100
+
+                JsonObject LED = doc["LED"];
+                int LED_delay_on = LED["delay_on"]; // 1000
+                int LED_delay_off = LED["delay_off"]; // 1000
+                int LED_pulse_width = LED["pulse_width"]; // 100
+                
+                // Message packet
+                /* We need to control the schedule for 5 devices: Source, Drain, Food, Air, Light.
+                   Each of these has a pulse wifth, time to stay on, time to stay off. For light, this is simpler, 
+                   But the source, drain, and food pumps need to operate for a much shorter period than the light, 
+                   as the containers don't take very long to fill (relative to the time between operations. 
+                   Should we use a JSON?
+
+                */
 
 //TODO: ADD TEST_DEVICE->on_time... to conditional here
                 if (delay_time != delay_on && delay_on != 0)
                 {
-
-                    Serial.println(F("Response:"));
-                    Serial.println(doc["id"].as<uint32_t>());
-                    Serial.println(doc["delay_on"].as<uint32_t>());
-                    Serial.println(doc["delay_off"].as<uint32_t>());
-                    Serial.println(doc["pulse_width"].as<uint32_t>());
-
-
                     delay_time = delay_on;
 
                     //Generalise
