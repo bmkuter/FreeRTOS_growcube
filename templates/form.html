@@ -8,26 +8,88 @@
 <BODY>
 
     <form action="{{ url_for('flask_set_delay_GUI') }}" method="POST">
-        <label for="device_number" class="form-label">Device Number</label>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Device Number</span>
             <input type="text" class="form-control" id="device_number" aria-describedby="basic-addon3" name="device_number">
         </div>
-        <label for="delay_on" class="form-label">Delay On</label>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Delay On</span>
             <input type="text" class="form-control" id="delay_on" aria-describedby="basic-addon3" name="delay_on">
         </div>
-        <label for="delay_off" class="form-label">Delay Off</label>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Delay Off</span>
             <input type="text" class="form-control" id="delay_off" aria-describedby="basic-addon3" name="delay_off">
         </div>
-        <label for="pulse_width" class="form-label">Pulse Width</label>
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Pulse Width</span>
             <input type="text" class="form-control" id="pulse_width" aria-describedby="basic-addon3" name="pulse_width">
         </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Source: Delay On</span>
+            <input type="text" class="form-control" id="source_delay_on" aria-describedby="basic-addon3" name="source_delay_on">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Source: Delay Off</span>
+            <input type="text" class="form-control" id="source_delay_off" aria-describedby="basic-addon3" name="source_delay_off">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Source: Pulse Width</span>
+            <input type="text" class="form-control" id="source_pulse_width" aria-describedby="basic-addon3" name="source_pulse_width">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Drain: Delay On</span>
+            <input type="text" class="form-control" id="drain_delay_on" aria-describedby="basic-addon3" name="drain_delay_on">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Drain: Delay Off</span>
+            <input type="text" class="form-control" id="drain_delay_off" aria-describedby="basic-addon3" name="drain_delay_off">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Drain: Pulse Width</span>
+            <input type="text" class="form-control" id="drain_pulse_width" aria-describedby="basic-addon3" name="drain_pulse_width">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Food: Delay On</span>
+            <input type="text" class="form-control" id="food_delay_on" aria-describedby="basic-addon3" name="food_delay_on">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Food: Delay Off</span>
+            <input type="text" class="form-control" id="food_delay_off" aria-describedby="basic-addon3" name="food_delay_off">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Food: Pulse Width</span>
+            <input type="text" class="form-control" id="food_pulse_width" aria-describedby="basic-addon3" name="food_pulse_width">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Air: Delay On</span>
+            <input type="text" class="form-control" id="air_delay_on" aria-describedby="basic-addon3" name="air_delay_on">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Air: Delay Off</span>
+            <input type="text" class="form-control" id="air_delay_off" aria-describedby="basic-addon3" name="air_delay_off">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">Air: Pulse Width</span>
+            <input type="text" class="form-control" id="air_pulse_width" aria-describedby="basic-addon3" name="air_pulse_width">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">LED: Delay On</span>
+            <input type="text" class="form-control" id="LED_delay_on" aria-describedby="basic-addon3" name="LED_delay_on">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">LED: Delay Off</span>
+            <input type="text" class="form-control" id="LED_delay_off" aria-describedby="basic-addon3" name="LED_delay_off">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">LED: Pulse Width</span>
+            <input type="text" class="form-control" id="LED_pulse_width" aria-describedby="basic-addon3" name="LED_pulse_width">
+        </div>
+
         <button class="btn btn-primary">Submit</button>
     </form>
 
