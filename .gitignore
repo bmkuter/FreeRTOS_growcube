@@ -142,3 +142,4 @@ Release/WiFiClientSecure/ssl_client.cpp.d
 Release/WiFiClientSecure/ssl_client.cpp.o
 Release/WiFiClientSecure/WiFiClientSecure.cpp.d
 Release/WiFiClientSecure/WiFiClientSecure.cpp.o
+*.d
