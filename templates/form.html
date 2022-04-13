@@ -7,18 +7,24 @@
 </head>
 <BODY>
     <script>
-        window.onload = () => {
+        window.onload = () => { //You would also probably want to update values when you submit the form
             var req = new XMLHttpRequest();
             req.onreadystatechange = processResponse;
-            req.open("GET", "http://localhost:5000/query_device/1");
+            req.open("GET", "http://localhost:5000/query_device/1"); // Probably want to get the device ID programmatically
             req.send();
 
             function processResponse() {
                 if (req.readyState != 4) return; // State 4 is DONE
-                console.log(req.responseText);
-                const jsonResp = JSON.parse(req.responseText);
+                const jsonResp = JSON.parse(req.responseText); //Get JSON so we can interact with the data
+                /** Set the value for all inoput fields. This can be done with a loop and both ways of accessing the json are valid
+                 * e.g.
+                 * const myFields = ['device_number', 'delay_on', 'delay_off', ...] 
+                 * myFields.forEach(field => {
+                 *  document.getElementById(field).value = jsonResp[field];
+                 * });
+                 */
                 document.getElementById("device_number").value = jsonResp.id;
-                document.getElementById("delay_on").value = jsonResp.delay_on;
+                document.getElementById("delay_on").value = jsonResp['delay_on'];
                 document.getElementById("delay_off").value = jsonResp.delay_off;
             }
         };
