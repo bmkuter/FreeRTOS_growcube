@@ -6,7 +6,23 @@
     <title>Health App</title>
 </head>
 <BODY>
+    <script>
+        window.onload = () => {
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = processResponse;
+            req.open("GET", "http://localhost:5000/query_device/1");
+            req.send();
 
+            function processResponse() {
+                if (req.readyState != 4) return; // State 4 is DONE
+                console.log(req.responseText);
+                const jsonResp = JSON.parse(req.responseText);
+                document.getElementById("device_number").value = jsonResp.id;
+                document.getElementById("delay_on").value = jsonResp.delay_on;
+                document.getElementById("delay_off").value = jsonResp.delay_off;
+            }
+        };
+    </script>
     <form action="{{ url_for('flask_set_delay_GUI') }}" method="POST">
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Device Number</span>
