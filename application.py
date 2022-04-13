@@ -8,6 +8,12 @@ import json
 
 # EB looks for an 'application' callable by default.
 application = Flask(__name__)
+##
+# You may want to investigate CORS policies if the UI and API are not hosted on the same server.
+# e.g.
+# from flask_cors import CORS
+# CORS(application)
+#
 
 delay = int(1000)
 
