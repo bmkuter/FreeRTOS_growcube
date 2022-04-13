@@ -17,6 +17,7 @@ int led_pin = LED_BUILTIN;
 //Networking Objects
 HTTPClient http; //Declare an object of class HTTPClient
 int pod_id = 1;
+//String server_name = "http://localhost:5000/query_device/";
 String server_name = "http://192.168.86.112:5000/query_device/";
 
 /*
@@ -41,7 +42,10 @@ TaskHandle_t keep_wifi_alive_handle = NULL;
 TaskHandle_t wifi_poll_server_handle = NULL;
 TaskHandle_t wifi_poll_server_json_handle = NULL;
 TaskHandle_t physical_controls_handle = NULL;
-
+TaskHandle_t source_handle = NULL;
+TaskHandle_t drain_handle = NULL;
+TaskHandle_t LED_handle = NULL;
+TaskHandle_t food_handle = NULL;
 
 // Initializing devices
 /*
@@ -60,12 +64,32 @@ typedef struct PWM_device {
     uint32_t off_time;
 } PWM_device;
 */
-PWM_device test_device =        { 1, 21, 0, 255, 5 , 0, 0, 0, 5000, 8, 1000, 1000 };
-PWM_device water_pump_source =  { 1, 17, 0, 255, 7, 0, 0, 1, 5000, 8, 500, 200 };
-PWM_device water_pump_drain =   { 1, 16, 0, 255, 1, 0, 0, 2, 5000, 8, 100, 500 };
-PWM_device food_pump =          { 1, 19, 0, 255, 10, 0, 0, 3, 5000, 8, 1520, 156 };
-PWM_device air_pump =           { 1, 32, 0, 255, 35, 0, 0, 4, 5000, 8, 2000, 2000 };
-PWM_device LED =                { 1, 15, 0, 255, 35, 0, 0, 5, 5000, 8, 2000, 2000 };;
+/*ON*/ PWM_device test_device =         { 1, 21, 0, 255, 25 , 0, 0, 0, 5000, 8, 1000, 1000};
+/*ON*/ PWM_device water_pump_source =   { 1, 17, 0, 255, 0, 0, 0, 1, 5000, 8, 0, 0 };
+/*ON*/ PWM_device water_pump_drain =    { 1, 16, 0, 255, 0, 0, 0, 2, 5000, 8, 0, 0 };
+/*ON*/ PWM_device food_pump =           { 1, 19, 0, 255, 0, 0, 0, 3, 5000, 8, 0, 0 };
+PWM_device air_pump =                   { 1, 32, 0, 255, 0, 0, 0, 4, 5000, 8, 0, 0 };
+PWM_device LED =                        { 1, 15, 0, 255, 0, 0, 0, 5, 5000, 8, 0, 0 };;
+
+//https://arduinojson.org/v5/doc/tricks/
+class HashPrint : public Print {
+public:
+    HashPrint() {
+        _hash = _hasher.crc32(NULL, 0);
+    }
+
+    virtual size_t write(uint8_t c) {
+        _hash = _hasher.crc32_upd(&c, 1);
+    }
+
+    uint32_t hash() const {
+        return _hash;
+    }
+
+private:
+    FastCRC32 _hasher;
+    uint32_t _hash;
+};
 
 // Our task: blink an LED at one rate
 void toggleLED_1(void* parameter) {
@@ -77,10 +101,19 @@ void toggleLED_1(void* parameter) {
     PWM_device* local_PWM_device = (PWM_device*)parameter;
 
     while (1) {
-        PWM_set_percent(local_PWM_device, local_PWM_device->pulse_width);
-        vTaskDelay(local_PWM_device->on_time / portTICK_PERIOD_MS);
-        PWM_set_percent(local_PWM_device, 0);
-        vTaskDelay(local_PWM_device->off_time / portTICK_PERIOD_MS);
+        if (local_PWM_device->off_time > 0 && local_PWM_device->on_time > 0 && local_PWM_device->pulse_width > 0)
+        {
+            PWM_set_percent(local_PWM_device, local_PWM_device->pulse_width);
+            vTaskDelay(local_PWM_device->on_time / portTICK_PERIOD_MS);
+            PWM_set_percent(local_PWM_device, 0);
+            vTaskDelay(local_PWM_device->off_time / portTICK_PERIOD_MS);
+        }
+        else
+        {
+            PWM_set_percent(local_PWM_device, 0);
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
+
     }
 
     vTaskDelete(NULL);
@@ -94,7 +127,7 @@ void PWM_set_percent(PWM_device* pwm_device, uint8_t pulse_width)
     /* If percent is 0, turn device off. */
     if (pulse_width == 0)
     {
-        ledcWrite(pwm_device->pwm_channel, 0);
+        ledcWrite(pwm_device->pwm_channel, 0); //Why does 256 turn off the LED lmao https://github.com/espressif/arduino-esp32/issues/689
         pwm_device->motor_status = 0;
     }
     /* If percent is 100, turn device to max. */
@@ -136,13 +169,12 @@ void PWM_timer_handler(void* pwm_device)
             PWM_set_percent(local_PWM_device, 0);
             vTaskDelay(local_PWM_device->off_time / portTICK_PERIOD_MS);
         }
-        else if (local_PWM_device->enabled == 0)
-        {
-            PWM_set_percent(local_PWM_device, 0);
-            local_PWM_device->motor_status = 0;
-        }
         else
         {
+            Serial.println("PWM OFF");
+            PWM_set_percent(local_PWM_device, 0);
+            local_PWM_device->motor_status = 0;
+            vTaskDelay(100 / portTICK_PERIOD_MS);
         }
     }
 }
@@ -360,6 +392,7 @@ void wifi_poll_server_json(void* parameter)
 {
     //ArduinoJson Stuff
     StaticJsonDocument<512> doc;
+    uint32_t new_payload_hash = 0, old_payload_hash = 0;
 
     while (1)
     {
@@ -371,6 +404,7 @@ void wifi_poll_server_json(void* parameter)
             { //Check the returning code
                 String payload = http.getString();   //Get the request response payload
                 DeserializationError error = deserializeJson(doc, payload);
+
 
                 if (error) {
                     Serial.print("deserializeJson() failed: ");
@@ -403,10 +437,10 @@ void wifi_poll_server_json(void* parameter)
                 int air_delay_off = air["delay_off"]; // 1000
                 int air_pulse_width = air["pulse_width"]; // 100
 
-                JsonObject LED = doc["LED"];
-                int LED_delay_on = LED["delay_on"]; // 1000
-                int LED_delay_off = LED["delay_off"]; // 1000
-                int LED_pulse_width = LED["pulse_width"]; // 100
+                JsonObject LED_json = doc["LED"];
+                int LED_delay_on = LED_json["delay_on"]; // 1000
+                int LED_delay_off = LED_json["delay_off"]; // 1000
+                int LED_pulse_width = LED_json["pulse_width"]; // 100
                 
                 // Message packet
                 /* We need to control the schedule for 5 devices: Source, Drain, Food, Air, Light.
@@ -417,16 +451,47 @@ void wifi_poll_server_json(void* parameter)
 
                 */
 
-//TODO: ADD TEST_DEVICE->on_time... to conditional here
-                if (delay_time != delay_on && delay_on != 0)
+                HashPrint hashPrint;
+                serializeJson(doc,hashPrint);
+                new_payload_hash = hashPrint.hash();
+  
+
+
+
+                // We compare to the hash of the previous message
+                if (new_payload_hash != old_payload_hash)
                 {
-                    delay_time = delay_on;
+                    Serial.printf("New Hash: ");
+                    Serial.println(new_payload_hash);
+                    Serial.printf("Old Hash: ");
+                    Serial.println(old_payload_hash);
 
                     //Generalise
+                    
                     (& test_device)->on_time = delay_on;
                     (& test_device)->off_time = delay_off;
                     (& test_device)->pulse_width = pulse_width;
 
+                    (&water_pump_source)->on_time = source_delay_on;
+                    (&water_pump_source)->off_time = source_delay_off;
+                    (&water_pump_source)->pulse_width = source_pulse_width;
+
+                    (&water_pump_drain)->on_time = drain_delay_on;
+                    (&water_pump_drain)->off_time = drain_delay_off;
+                    (&water_pump_drain)->pulse_width = drain_pulse_width;
+
+                    (&food_pump)->on_time = food_delay_on;
+                    (&food_pump)->off_time = food_delay_off;
+                    (&food_pump)->pulse_width = food_pulse_width;
+                    /*
+                    (&air_pump)->on_time = air_delay_on;
+                    (&air_pump)->off_time = air_delay_off;
+                    (&air_pump)->pulse_width = air_pulse_width;
+
+                    (&LED)->on_time = LED_delay_on;
+                    (&LED)->off_time = LED_delay_off;
+                    (&LED)->pulse_width = LED_pulse_width;
+                    */
                     restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
                         toggleLED_1,  // Function to be called
                         "Toggle 1",   // Name of task
@@ -435,10 +500,36 @@ void wifi_poll_server_json(void* parameter)
                         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
                         &toggleLED_1_handle          // Task handle
                     );
+                    restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
+                        PWM_timer_handler,  // Function to be called
+                        "empty tank",   // Name of task
+                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        (void*)&water_pump_drain,         // Parameter to pass to function
+                        1,            // Task priority (0 to configMAX_PRIORITIES - 1)
+                        &drain_handle         // Task handle
+                    );
+                    restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
+                        PWM_timer_handler,  // Function to be called
+                        "food",   // Name of task
+                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        (void*)&food_pump,         // Parameter to pass to function
+                        1,            // Task priority (0 to configMAX_PRIORITIES - 1)
+                        &food_handle         // Task handle
+                    );
+                    restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
+                        PWM_timer_handler,  // Function to be called
+                        "fill tank",   // Name of task
+                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        (void*)&water_pump_source,         // Parameter to pass to function
+                        1,            // Task priority (0 to configMAX_PRIORITIES - 1)
+                        &source_handle         // Task handle       // Task handle
+                    );
                 }
-            }
+                old_payload_hash = new_payload_hash;
+}
             http.end();   //Close connection
-            vTaskDelay(100 / portTICK_PERIOD_MS);
+            vTaskDelay(250 / portTICK_PERIOD_MS);
         }
     }
 }
+

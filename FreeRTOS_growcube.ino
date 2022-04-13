@@ -3,12 +3,15 @@
  Created:	3/14/2022 11:08:52 PM
  Author:	Benny
 */
-#include "pwm_device.h"
 
+#include "pwm_device.h"
 WiFiServer server(80);
 
 
 void setup() {
+    // Watchdog Timers
+    disableCore0WDT();
+    disableCore1WDT();
     // Starting hardware communications
 
     Serial.begin(9600);
@@ -44,13 +47,16 @@ void setup() {
 
 // Pump tasks
     
+    // NOTE:
+    // Wrap fill and empty into one function, possibly with an arguement to indicate the tank is starting empty, to ensure that the tank is empty before water is pumped in. 
+
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
         "fill tank",   // Name of task
         1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &water_pump_source,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
-        NULL);         // Task handle
+        &source_handle);         // Task handle
 
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
@@ -58,7 +64,7 @@ void setup() {
         1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &water_pump_drain,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
-        NULL);         // Task handle
+        &drain_handle);         // Task handle
     /*
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         turn_on_air_pump,  // Function to be called
@@ -75,7 +81,7 @@ void setup() {
         1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &food_pump,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
-        NULL);         // Task handle
+        &food_handle);         // Task handle
     
 
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS

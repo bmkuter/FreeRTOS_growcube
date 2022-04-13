@@ -15,6 +15,11 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include "soc/timer_group_struct.h"
+#include "soc/timer_group_reg.h"
+#include <FastCRC_tables.h>
+#include <FastCRC.h>
+
 
 
 #define WIFI_TIMEOUT_MS 20000 // 20 second WiFi connection timeout
@@ -69,6 +74,10 @@ extern TaskHandle_t keep_wifi_alive_handle;
 extern TaskHandle_t wifi_poll_server_handle;
 extern TaskHandle_t wifi_poll_server_json_handle;
 extern TaskHandle_t physical_controls_handle;
+extern TaskHandle_t source_handle;
+extern TaskHandle_t drain_handle;
+extern TaskHandle_t LED_handle;
+extern TaskHandle_t food_handle;
 
 //Task Handler Structs
 typedef struct task_fields

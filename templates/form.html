@@ -6,7 +6,51 @@
     <title>Health App</title>
 </head>
 <BODY>
+    <script>
+        window.onload = () => { //You would also probably want to update values when you submit the form
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = processResponse;
+            req.open("GET", "http://192.168.86.112:5000/query_device/1"); // Probably want to get the device ID programmatically
+            req.send();
 
+            function processResponse() {
+                if (req.readyState != 4) return; // State 4 is DONE
+                const jsonResp = JSON.parse(req.responseText); //Get JSON so we can interact with the data
+                /** Set the value for all inoput fields. This can be done with a loop and both ways of accessing the json are valid
+                 * e.g.
+                 * const myFields = ['device_number', 'delay_on', 'delay_off', ...]
+                 * myFields.forEach(field => {
+                 *  document.getElementById(field).value = jsonResp[field];
+                 * });
+                 */
+                document.getElementById("device_number").value = jsonResp.id;
+                document.getElementById("delay_on").value = jsonResp['delay_on'];
+                document.getElementById("delay_off").value = jsonResp.delay_off;
+                document.getElementById("pulse_width").value = jsonResp.pulse_width;
+
+                document.getElementById("source_delay_on").value = jsonResp.source.delay_on;
+                document.getElementById("source_delay_off").value = jsonResp.source.delay_off;
+                document.getElementById("source_pulse_width").value = jsonResp.source.pulse_width;
+
+                document.getElementById("drain_delay_on").value = jsonResp.drain.delay_on;
+                document.getElementById("drain_delay_off").value = jsonResp.drain.delay_off;
+                document.getElementById("drain_pulse_width").value = jsonResp.drain.pulse_width;
+
+                document.getElementById("food_delay_on").value = jsonResp.food.delay_on;
+                document.getElementById("food_delay_off").value = jsonResp.food.delay_off;
+                document.getElementById("food_pulse_width").value = jsonResp.food.pulse_width;
+
+                document.getElementById("air_delay_on").value = jsonResp.air.delay_on;
+                document.getElementById("air_delay_off").value = jsonResp.air.delay_off;
+                document.getElementById("air_pulse_width").value = jsonResp.air.pulse_width;
+
+                document.getElementById("LED_delay_on").value = jsonResp.LED.delay_on;
+                document.getElementById("LED_delay_off").value = jsonResp.LED.delay_off;
+                document.getElementById("LED_pulse_width").value = jsonResp.LED.pulse_width;
+
+            }
+        };
+    </script>
     <form action="{{ url_for('flask_set_delay_GUI') }}" method="POST">
         <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon3">Device Number</span>

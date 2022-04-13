@@ -8,6 +8,7 @@ import json
 
 # EB looks for an 'application' callable by default.
 application = Flask(__name__)
+#application.config['SERVER_NAME'] = 'localhost:5000'
 
 delay = int(1000)
 
@@ -39,25 +40,25 @@ def flask_set_delay_GUI():
         delay_off = request.form.get('delay_off')
         pulse_width = request.form.get('pulse_width')
         #Source
-        source_delay_on = request.form.get('delay_on')
-        source_delay_off = request.form.get('delay_off')
-        source_pulse_width = request.form.get('pulse_width')
+        source_delay_on = request.form.get('source_delay_on')
+        source_delay_off = request.form.get('source_delay_off')
+        source_pulse_width = request.form.get('source_pulse_width')
         #Drain
-        drain_delay_on = request.form.get('delay_on')
-        drain_delay_off = request.form.get('delay_off')
-        drain_pulse_width = request.form.get('pulse_width')
+        drain_delay_on = request.form.get('drain_delay_on')
+        drain_delay_off = request.form.get('drain_delay_off')
+        drain_pulse_width = request.form.get('drain_pulse_width')
         #Food
-        food_delay_on = request.form.get('delay_on')
-        food_delay_off = request.form.get('delay_off')
-        food_pulse_width = request.form.get('pulse_width')
+        food_delay_on = request.form.get('food_delay_on')
+        food_delay_off = request.form.get('food_delay_off')
+        food_pulse_width = request.form.get('food_pulse_width')
         #Air
-        air_delay_on = request.form.get('delay_on')
-        air_delay_off = request.form.get('delay_off')
-        air_pulse_width = request.form.get('pulse_width')
+        air_delay_on = request.form.get('air_delay_on')
+        air_delay_off = request.form.get('air_delay_off')
+        air_pulse_width = request.form.get('air_pulse_width')
         #LED
-        LED_delay_on = request.form.get('delay_on')
-        LED_delay_off = request.form.get('delay_off')
-        LED_pulse_width = request.form.get('pulse_width')
+        LED_delay_on = request.form.get('LED_delay_on')
+        LED_delay_off = request.form.get('LED_delay_off')
+        LED_pulse_width = request.form.get('LED_pulse_width')
         #Making payload
         payload = (device_number, delay_on, delay_off, pulse_width,source_delay_on,source_delay_off,source_pulse_width,drain_delay_on,drain_delay_off,drain_pulse_width,food_delay_on,food_delay_off,food_pulse_width,air_delay_on,air_delay_off,air_pulse_width,LED_delay_on,LED_delay_off,LED_pulse_width)
         print(payload)
@@ -149,6 +150,11 @@ def flask_query_delay(device_number):
         }
     }
     return (json.dumps(output_json))
+
+@application.route('/')
+def welcome_screen():
+    packet = "Welcome to Growpod's GUI:\nPlease visit .../set_device to configure settings. "
+    return (packet)
 
 # run the app.
 if __name__ == "__main__":
