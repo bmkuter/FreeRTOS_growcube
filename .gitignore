@@ -143,3 +143,8 @@ Release/WiFiClientSecure/ssl_client.cpp.o
 Release/WiFiClientSecure/WiFiClientSecure.cpp.d
 Release/WiFiClientSecure/WiFiClientSecure.cpp.o
 *.d
+.vs/FreeRTOS_growcube/v17/ipch/AutoPCH/23e27ce9cc6683aa/504_DIJKSTRA_HEAP.ipch
+Database/pod_settings_new.db
+Release/Adafruit_TSL2591_Library/Adafruit_TSL2591.cpp.o
+Release/Adafruit_Unified_Sensor/Adafruit_Sensor.cpp.o
+Release/LiquidCrystal/LiquidCrystal.cpp.o
