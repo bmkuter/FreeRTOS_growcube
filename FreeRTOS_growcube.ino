@@ -4,14 +4,19 @@
  Author:	Benny
 */
 
+
 #include "pwm_device.h"
 WiFiServer server(80);
 
 
+//Queue Handles
+static const int i2c_screen_queue_len = 5;   // Size of delay_queue
+
+
 void setup() {
     // Watchdog Timers
-    disableCore0WDT();
-    disableCore1WDT();
+    //disableCore0WDT();
+    //disableCore1WDT();
     // Starting hardware communications
 
     Serial.begin(9600);
@@ -34,17 +39,6 @@ void setup() {
     PWM_init(&test_device);
 
 
-    int freq = 5000;
-    int ledChannel = 0;
-    int resolution = 8;
-
-    //PWM_timer_handler((void*)&test_device);
-    //ledcSetup(ledChannel, freq, resolution);
-    //ledcAttachPin(LED_BUILTIN, ledChannel);
-
-// Configure pin
-    pinMode(led_pin, OUTPUT);
-
 // Pump tasks
     
     // NOTE:
@@ -53,7 +47,7 @@ void setup() {
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
         "fill tank",   // Name of task
-        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &water_pump_source,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         &source_handle);         // Task handle
@@ -61,7 +55,7 @@ void setup() {
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
         "empty tank",   // Name of task
-        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &water_pump_drain,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         &drain_handle);         // Task handle
@@ -78,14 +72,14 @@ void setup() {
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
         PWM_timer_handler,  // Function to be called
         "food",   // Name of task
-        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
         &food_pump,         // Parameter to pass to function
         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
         &food_handle);         // Task handle
     
 
     xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
-        toggleLED_1,  // Function to be called
+        PWM_timer_handler,  // Function to be called
         "Toggle 1",   // Name of task
         2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
         (void*) &test_device,  // Parameter to pass to function
@@ -109,7 +103,7 @@ void setup() {
         "keep_wifi_alive",  // Task name
         5000,             // Stack size (bytes)
         NULL,             // Parameter
-        1,                // Task priority
+        2,                // Task priority
         &keep_wifi_alive_handle,             // Task handle
         CONFIG_ARDUINO_RUNNING_CORE
     );
@@ -119,16 +113,25 @@ void setup() {
         "wifi_poll_server_json",  // Task name
         5000,             // Stack size (bytes)
         NULL,             // Parameter
-        1,                // Task priority
+        2,                // Task priority
         &wifi_poll_server_json_handle,             // Task handle
         CONFIG_ARDUINO_RUNNING_CORE
     );
-
+    
+    
+    xTaskCreate(  // Use xTaskCreate() in vanilla FreeRTOS
+        i2c_task_handler,  // Function to be called
+        "i2c_screen",   // Name of task
+        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
+        NULL,  // Parameter to pass to function
+        1,            // Task priority (0 to configMAX_PRIORITIES - 1)
+        &i2c_screen_handle          // Task handle
+    );
+    
     // Delete setup and loop "tasks"
     vTaskDelete(NULL);
 }
 
 void loop()
 {
-
 }

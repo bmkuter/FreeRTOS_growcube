@@ -20,6 +20,8 @@ int pod_id = 1;
 //String server_name = "http://localhost:5000/query_device/";
 String server_name = "http://192.168.86.112:5000/query_device/";
 
+
+
 /*
 typedef struct PWM_device {
     uint8_t enabled;
@@ -46,6 +48,13 @@ TaskHandle_t source_handle = NULL;
 TaskHandle_t drain_handle = NULL;
 TaskHandle_t LED_handle = NULL;
 TaskHandle_t food_handle = NULL;
+TaskHandle_t i2c_screen_handle = NULL;
+
+//Mutexs
+
+//I2C stuff
+Adafruit_TSL2591 tsl = Adafruit_TSL2591(2591);
+
 
 // Initializing devices
 /*
@@ -97,7 +106,7 @@ void toggleLED_1(void* parameter) {
     // Casting arguement as integer so we can use it to get delay from a global variable.
     //int* local_delay;
     //local_delay = (int*)parameter;
-
+    Serial.printf("Top of ToggleLED_1\n");
     PWM_device* local_PWM_device = (PWM_device*)parameter;
 
     while (1) {
@@ -161,7 +170,7 @@ void PWM_timer_handler(void* pwm_device)
     while (1)
     {
         // Ensures the PWM Device is generally enabled. Enabled can be toggled by emergency stop functions.
-        if (local_PWM_device->enabled == 1 )
+        if (local_PWM_device->off_time > 0 && local_PWM_device->on_time > 0 && local_PWM_device->pulse_width > 0 && local_PWM_device->enabled == 1 )
         {
             //Serial.printf("local_PWM_device->on_time = %d\n", local_PWM_device->on_time);
             PWM_set_percent(local_PWM_device, local_PWM_device->pulse_width);
@@ -171,9 +180,7 @@ void PWM_timer_handler(void* pwm_device)
         }
         else
         {
-            Serial.println("PWM OFF");
             PWM_set_percent(local_PWM_device, 0);
-            local_PWM_device->motor_status = 0;
             vTaskDelay(100 / portTICK_PERIOD_MS);
         }
     }
@@ -280,7 +287,7 @@ void i2c_scanner()
         Serial.println("No I2C devices found\n");
     else
         Serial.println("done\n");
-    delay(500);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
 }
 
 void restart_task(
@@ -454,9 +461,6 @@ void wifi_poll_server_json(void* parameter)
                 HashPrint hashPrint;
                 serializeJson(doc,hashPrint);
                 new_payload_hash = hashPrint.hash();
-  
-
-
 
                 // We compare to the hash of the previous message
                 if (new_payload_hash != old_payload_hash)
@@ -492,10 +496,12 @@ void wifi_poll_server_json(void* parameter)
                     (&LED)->off_time = LED_delay_off;
                     (&LED)->pulse_width = LED_pulse_width;
                     */
+                    Serial.println("\nRestarting Toggle 1");
+                    Serial.printf("Delay on: %d\nDelay off: %d\nPulse Width: %d\n\n", delay_on, delay_off, pulse_width);
                     restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
-                        toggleLED_1,  // Function to be called
+                        PWM_timer_handler,  // Function to be called
                         "Toggle 1",   // Name of task
-                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
                         (void*)&test_device,  // Parameter to pass to function
                         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
                         &toggleLED_1_handle          // Task handle
@@ -503,7 +509,7 @@ void wifi_poll_server_json(void* parameter)
                     restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
                         PWM_timer_handler,  // Function to be called
                         "empty tank",   // Name of task
-                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
                         (void*)&water_pump_drain,         // Parameter to pass to function
                         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
                         &drain_handle         // Task handle
@@ -511,7 +517,7 @@ void wifi_poll_server_json(void* parameter)
                     restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
                         PWM_timer_handler,  // Function to be called
                         "food",   // Name of task
-                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
                         (void*)&food_pump,         // Parameter to pass to function
                         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
                         &food_handle         // Task handle
@@ -519,17 +525,98 @@ void wifi_poll_server_json(void* parameter)
                     restart_task(  // Use xTaskCreate() in vanilla FreeRTOS
                         PWM_timer_handler,  // Function to be called
                         "fill tank",   // Name of task
-                        1024,         // Stack size (bytes in ESP32, words in FreeRTOS)
+                        2048,         // Stack size (bytes in ESP32, words in FreeRTOS)
                         (void*)&water_pump_source,         // Parameter to pass to function
                         1,            // Task priority (0 to configMAX_PRIORITIES - 1)
                         &source_handle         // Task handle       // Task handle
                     );
+                    Serial.printf("Done restarting tasks\n");
+                    old_payload_hash = new_payload_hash;
                 }
-                old_payload_hash = new_payload_hash;
 }
             http.end();   //Close connection
             vTaskDelay(250 / portTICK_PERIOD_MS);
         }
+        vTaskDelay(250 / portTICK_PERIOD_MS);
     }
 }
 
+void i2c_task_handler(void* parameter)
+{
+    //Simple routine to example reading an i2c device and serial print results. 
+    //Also writes measurement to server_dispatch function
+    //xSemaphoreTake(i2c_mutex, portMAX_DELAY);
+    int attempts = 0;
+    displaySensorDetails();
+    configureSensor();
+    while (1)
+    {
+        attempts = 0;
+        uint16_t x = tsl.getLuminosity(TSL2591_VISIBLE); //Replace this with custom code. 
+        while (x > 0xEEEE && attempts < 3) //0xEEEE = 0d61166
+        {
+            //Sensor/transaction error. Placeholder fix.
+            x = tsl.getLuminosity(TSL2591_VISIBLE);
+            attempts++;
+        }
+        Serial.printf("Luminosity: %d\n",x);//Change this so its adds a printjob to a serial task.
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+    }
+}
+
+void displaySensorDetails(void)
+{
+    sensor_t sensor;
+    tsl.getSensor(&sensor);
+    Serial.println(F("------------------------------------"));
+    Serial.print(F("Sensor:       ")); Serial.println(sensor.name);
+    Serial.print(F("Driver Ver:   ")); Serial.println(sensor.version);
+    Serial.print(F("Unique ID:    ")); Serial.println(sensor.sensor_id);
+    Serial.print(F("Max Value:    ")); Serial.print(sensor.max_value); Serial.println(F(" lux"));
+    Serial.print(F("Min Value:    ")); Serial.print(sensor.min_value); Serial.println(F(" lux"));
+    Serial.print(F("Resolution:   ")); Serial.print(sensor.resolution, 4); Serial.println(F(" lux"));
+    Serial.println(F("------------------------------------"));
+    Serial.println(F(""));
+}
+
+void configureSensor(void)
+{
+    // You can change the gain on the fly, to adapt to brighter/dimmer light situations
+    //tsl.setGain(TSL2591_GAIN_LOW);    // 1x gain (bright light)
+    tsl.setGain(TSL2591_GAIN_MED);      // 25x gain
+    //tsl.setGain(TSL2591_GAIN_HIGH);   // 428x gain
+
+    // Changing the integration time gives you a longer time over which to sense light
+    // longer timelines are slower, but are good in very low light situtations!
+    //tsl.setTiming(TSL2591_INTEGRATIONTIME_100MS);  // shortest integration time (bright light)
+    // tsl.setTiming(TSL2591_INTEGRATIONTIME_200MS);
+     tsl.setTiming(TSL2591_INTEGRATIONTIME_300MS);
+    // tsl.setTiming(TSL2591_INTEGRATIONTIME_400MS);
+    // tsl.setTiming(TSL2591_INTEGRATIONTIME_500MS);
+    // tsl.setTiming(TSL2591_INTEGRATIONTIME_600MS);  // longest integration time (dim light)
+
+    /* Display the gain and integration time for reference sake */
+    Serial.println(F("------------------------------------"));
+    Serial.print(F("Gain:         "));
+    tsl2591Gain_t gain = tsl.getGain();
+    switch (gain)
+    {
+    case TSL2591_GAIN_LOW:
+        Serial.println(F("1x (Low)"));
+        break;
+    case TSL2591_GAIN_MED:
+        Serial.println(F("25x (Medium)"));
+        break;
+    case TSL2591_GAIN_HIGH:
+        Serial.println(F("428x (High)"));
+        break;
+    case TSL2591_GAIN_MAX:
+        Serial.println(F("9876x (Max)"));
+        break;
+    }
+    Serial.print(F("Timing:       "));
+    Serial.print((tsl.getTiming() + 1) * 100, DEC);
+    Serial.println(F(" ms"));
+    Serial.println(F("------------------------------------"));
+    Serial.println(F(""));
+}

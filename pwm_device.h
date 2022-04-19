@@ -10,7 +10,6 @@
 #endif
 
 #include <Adafruit_INA260.h> /* https://www.adafruit.com/product/4226 */
-#include <LiquidCrystal_I2C.h>
 #include "password.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -19,7 +18,7 @@
 #include "soc/timer_group_reg.h"
 #include <FastCRC_tables.h>
 #include <FastCRC.h>
-
+#include <Adafruit_TSL2591.h>
 
 
 #define WIFI_TIMEOUT_MS 20000 // 20 second WiFi connection timeout
@@ -78,6 +77,13 @@ extern TaskHandle_t source_handle;
 extern TaskHandle_t drain_handle;
 extern TaskHandle_t LED_handle;
 extern TaskHandle_t food_handle;
+extern TaskHandle_t i2c_screen_handle;
+
+//Queue Handles
+//extern QueueHandle_t i2c_screen_queue_handle;
+
+//Mutexes
+extern portMUX_TYPE i2c_mutex;
 
 //Task Handler Structs
 typedef struct task_fields
@@ -95,6 +101,11 @@ extern task_fields food_pump_task_field;
 extern task_fields air_pump_task_field;
 extern task_fields test_device_task_field;
 
+//I2C stuff
+extern Adafruit_TSL2591 tsl;
+extern void displaySensorDetails(void);
+extern void configureSensor(void);
+void simpleRead(void);
 
 //Wifi & Communication Functions
 extern HTTPClient http;
@@ -102,7 +113,8 @@ extern String server_name;
 extern int pod_id;
 extern void keep_wifi_alive(void* parameter);
 extern void wifi_poll_server(void* parameter);
-extern void wifi_poll_server_json(void* parameter);
+extern void wifi_poll_server_json(void* parameter);//Gets data from server via a json
+extern void wifi_dispatch_server(void* parameter); //Sends data to server
 
 //Motor Management Functions
 extern void restart_task(
@@ -130,6 +142,7 @@ extern void start_pwm_tasks();
 
 //Screen Functions
 extern void i2c_scanner();
+extern void i2c_task_handler(void* parameter);		//generic for handling I2C tasks, with a message queue for async inter-task communication. 
 extern void physical_controls(void* parameter);
 
 //Example Functions
