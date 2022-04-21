@@ -27,9 +27,16 @@ void setup() {
     // Set WiFi to station mode and disconnect from an AP if it was previously connected
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    Wire.begin();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Serial.print("Connecting to WiFi ..");
+    while (WiFi.status() != WL_CONNECTED) {
+        Serial.print('.');
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    Serial.println(WiFi.localIP());
 
     // I2C stuff
+    Wire.begin();
     i2c_scanner();
     PWM_init(&water_pump_source);
     PWM_init(&water_pump_drain);

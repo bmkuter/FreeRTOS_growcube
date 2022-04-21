@@ -18,7 +18,7 @@ int led_pin = LED_BUILTIN;
 HTTPClient http; //Declare an object of class HTTPClient
 int pod_id = 1;
 //String server_name = "http://localhost:5000/query_device/";
-String server_name = "http://192.168.86.112:5000/query_device/";
+String server_name = "http://192.168.4.1:5000/query_device/";
 
 
 

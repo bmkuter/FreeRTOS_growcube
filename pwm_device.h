@@ -16,7 +16,7 @@
 #include <ArduinoJson.h>
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
-#include <FastCRC_tables.h>
+//#include <FastCRC_tables.h>
 #include <FastCRC.h>
 #include <Adafruit_TSL2591.h>
 
