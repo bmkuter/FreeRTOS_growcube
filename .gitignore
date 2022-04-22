@@ -7,3 +7,10 @@ Release/
 __vm/
 Debug/
 start
+
+#MAC
+.DS_Store
+*._*
+
+#Node
+node_modules/
