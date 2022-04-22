@@ -79,13 +79,15 @@ def flask_set_delay_GUI():
 
 
 # Convert so this returns a JSON of all needed info.
-@application.route('/query_device/<device_number>', methods=['GET'], )
+
+@application.route('/query_device/<device_number>', methods=['GET']) # Should not be a POST for a Get command. Should only be GET
 def flask_query_delay(device_number):
-    # Example
+    # This is just because maintaining multiple SQL queries like that is a PITA
     row = []
     for record in db.execute("SELECT id, delay_on, delay_off, pulse_width, source_delay_on, source_delay_off, source_pulse_width, drain_delay_on, drain_delay_off, drain_pulse_width, food_delay_on, food_delay_off, food_pulse_width, air_delay_on, air_delay_off, air_pulse_width, LED_delay_on, LED_delay_off, LED_pulse_width FROM settings WHERE id =:device_number", {"device_number": device_number}):
         row = record
     # Formatting JSON
+    # I don't think its the best idea to keep this as just indices
     output_json = {
         "id": row[0],
         "delay_on": row[1],
