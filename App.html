@@ -1,0 +1,37 @@
+<script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+
+<div id="app">
+  <form @submit.prevent="submit">
+    <div v-for="item in arr" class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon3">{{item.field}}: </span>
+      <input type="text" class="form-control" v-model="item.value">
+    </div>
+    <button type="submit">
+      Submit
+    </button>
+  </form>
+</div>
+
+<script type="module">
+  import { createApp } from 'vue'
+  import { ref } from 'vue'
+  const arr = ref([{ field: 'air_delay_on', value: 310 }, { field: 'air_delay_off', value: 220 }, { field: 'device_number', value: 250 }, { field: 'delay_on', value: 210 }, { field: 'delay_off', value: 120 }, { field: 'pulse_width', value: 125 }, { field: 'source_delay_on', value: 230 }, { field: 'source_delay_off', value: 202 }, { field: 'source_pulse_width', value: 2560 }, { field: 'drain_delay_on', value: 230 }, { field: 'drain_delay_off', value: 202 }, { field: 'drain_pulse_width', value: 2560 }, { field: 'food_delay_on', value: 230 }, { field: 'food_delay_off', value: 202 }, { field: 'food_pulse_width', value: 2560 }, { field: 'LED_delay_on', value: 230 }, { field: 'LED_delay_off', value: 202 }, { field: 'LED_pulse_width', value: 2560 },]);
+  const submit = () => {
+    console.log("HTTP REQUEST GOES HERE");
+  }
+
+  createApp({
+    data() {
+      return {
+        arr: arr,
+        submit: submit
+      }
+    }
+  }).mount('#app')
+</script>
