@@ -3,8 +3,9 @@
 # Installing
 
 ## Prereqs
-Python
-Pip
+- Python
+- Pip
+- npm
 
 ## Command
 `pip install -r requirements.txt`
