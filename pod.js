@@ -10,7 +10,7 @@ export default {
     data() {
         // This is the state of the component. 
         return {
-            settings: {
+           data: {
                 "id": 2,
                 "delay_on": 0,
                 "delay_off": 0,
@@ -36,38 +36,40 @@ export default {
                     "pulse_width": 0
                 },
                 "LED": {
-                    "delay_on": 0,
-                    "delay_off": 0,
-                    "pulse_width": 0
+                    "delay_on": 3,
+                    "delay_off": 2,
+                    "pulse_width": 1
                 }
             }
         }
     },
-    created() {
+    beforeMount() {
         // This is a alifecycle function. It is called everytime the component "mounts"
         // A mount == reload, essentially
         // Same old http request as in window.onload except...
-        axios.get(`http://192.168.50.36:5000/device/${this.settings.id}`).then(response => {
-            this.settings = response.data;
-            console.log(this.settings)
+        axios.get(`http://192.168.50.36:5000/device/${this.data.id}`).then(response => {
+            console.log(this.data)
+            this.data = response.data;
+            console.log(this.data)
         });
     },
     methods: {
         submit(e) {
             //Use our saved data object and send it to the API (We don't use any DOM access here)
-            console.log("HTTP REQUEST GOES HERE");
-            axios.post(`http://192.168.50.36:5000/device/${this.settings.id}`, this.settings).then(response => {
+            console.log(e)
+            axios.post(`http://192.168.50.36:5000/device/${this.data.id}`, this.data).then(response => {
                 console.log(response);
             });
         },
         update(value) {
+            console.log('Update:');
             console.log(value);
             if(value.system_name === "root") {
-                this.settings.delay_off = value.delay_off
-                this.settings.delay_on = value.delay_on
-                this.settings.pulse_width = value.pulse_width
+                this.data.delay_off = value.value
+                this.data.delay_on = value.delay_on
+                this.data.pulse_width = value.pulse_width
             } else {
-                this.settings[value.system_name] = {delay_off: value.delay_off, delay_on: value.delay_on, pulse_width: value.pulse_width }
+                this.data[value.system_name][value.update] = value.value;
             }
         }
     },
@@ -75,39 +77,39 @@ export default {
     template: `
     <form @submit.prevent="submit">
         <system-component system_name="root" 
-            :delay_on="this.settings.delay_on"
-            :delay_off="this.settings.delay_off" 
-            :pulse_width="this.settings.pulse_width"
+            :delay_on="this.data.delay_on"
+            :delay_off="this.data.delay_off" 
+            :pulse_width="this.data.pulse_width"
             @update="update">
         </system-component>
         <system-component system_name="source" 
-            :delay_on="this.settings.source.delay_on"
-            :delay_off="this.settings.source.delay_off" 
-            :pulse_width="this.settings.source.pulse_width"
+            :delay_on="this.data.source.delay_on"
+            :delay_off="this.data.source.delay_off" 
+            :pulse_width="this.data.source.pulse_width"
             @update="update">
         </system-component>
         <system-component system_name="drain" 
-            :delay_on="this.settings.drain.delay_on"
-            :delay_off="this.settings.drain.delay_off" 
-            :pulse_width="this.settings.drain.pulse_width"
+            :delay_on="this.data.drain.delay_on"
+            :delay_off="this.data.drain.delay_off" 
+            :pulse_width="this.data.drain.pulse_width"
             @update="update">
         </system-component>
         <system-component system_name='food' 
-            :delay_on="this.settings.food.delay_on"
-            :delay_off="this.settings.food.delay_off" 
-            :pulse_width="this.settings.food.pulse_width"
+            :delay_on="this.data.food.delay_on"
+            :delay_off="this.data.food.delay_off" 
+            :pulse_width="this.data.food.pulse_width"
             @update="update">
         </system-component>
         <system-component system_name="air" 
-            :delay_on="this.settings.air.delay_on"
-            :delay_off="this.settings.air.delay_off" 
-            :pulse_width="this.settings.air.pulse_width"
+            :delay_on="this.data.air.delay_on"
+            :delay_off="this.data.air.delay_off" 
+            :pulse_width="this.data.air.pulse_width"
             @update="update">
         </system-component>
         <system-component system_name="LED" 
-            :delay_on="this.settings.LED.delay_on"
-            :delay_off="this.settings.LED.delay_off" 
-            :pulse_width="this.settings.LED.pulse_width"
+            :delay_on="this.data.LED.delay_on"
+            :delay_off="this.data.LED.delay_off" 
+            :pulse_width="this.data.LED.pulse_width"
             @update="update">
         </system-component>
         <button @click="submit" class="btn btn-primary">Update</button>
