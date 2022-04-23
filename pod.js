@@ -43,7 +43,7 @@ export default {
             }
         }
     },
-    mounted() {
+    created() {
         // This is a alifecycle function. It is called everytime the component "mounts"
         // A mount == reload, essentially
         // Same old http request as in window.onload except...
@@ -57,7 +57,6 @@ export default {
             //Use our saved data object and send it to the API (We don't use any DOM access here)
             console.log("HTTP REQUEST GOES HERE");
             axios.post(`http://192.168.50.36:5000/device/${this.settings.id}`, this.settings).then(response => {
-
                 console.log(response);
             });
         },
@@ -68,9 +67,7 @@ export default {
                 this.settings.delay_on = value.delay_on
                 this.settings.pulse_width = value.pulse_width
             } else {
-                this.settings[value.system_name].delay_off = value.delay_off
-                this.settings[value.system_name].delay_on = value.delay_on
-                this.settings[value.system_name].pulse_width = value.pulse_width
+                this.settings[value.system_name] = {delay_off: value.delay_off, delay_on: value.delay_on, pulse_width: value.pulse_width }
             }
         }
     },

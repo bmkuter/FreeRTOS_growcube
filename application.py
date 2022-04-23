@@ -97,14 +97,10 @@ def flask_query_delay(device_number):
                 "pulse_width": row[18]
             }
         }
-        return (output_json)
+        return output_json
 
     elif request.method == 'POST':
         data = json.loads(request.data)
-        print(data)
-        print()
-        print("LED:")
-        print(data["LED"]["pulse_width"])
         # Making payload
         payload = (device_number,data["delay_on"],data["delay_off"],data["pulse_width"],data["source"]["delay_on"],data["source"]["delay_off"],data["source"]["pulse_width"],data["drain"]["delay_on"],data["drain"]["delay_off"],
                     data["drain"]["pulse_width"],data["food"]["delay_on"],data["food"]["delay_off"],data["food"]["pulse_width"],data["air"]["delay_on"],data["air"]["delay_off"],data["air"]["pulse_width"],data["LED"]["delay_on"],data["LED"]["delay_off"],data["LED"]["pulse_width"])

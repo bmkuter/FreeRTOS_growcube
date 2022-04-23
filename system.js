@@ -8,7 +8,6 @@ export default {
         "delay_on": Number,
         "delay_off": Number,
         "pulse_width": Number,
-
     },
     data() {
         return {
@@ -28,9 +27,6 @@ export default {
             pulse_width: this.pulse_width
         }
     },
-    methods: {
-
-    },
     // template is the HTML part of the component. @submit.prevent="submit" does just what you think, prevents default submit. @click is a vue wrapper for onclick and submit is the name of the function being called on click
     template: `
     <div id="system">
@@ -38,8 +34,7 @@ export default {
             <span class="input-group-text" id="basic-addon3">{{ this.data.system_name }}: Delay On</span>
             <input type="number" class="form-control" 
             v-model="this.data.delay_on"
-            v-on:keypress="$emit('update', this.data)"
-            v-on:paste="$emit('update', this.data)"
+xc            v-on:paste="$emit('update', this.data)"
             v-on:input="$emit('update', this.data)">
         </div>
         <div class="input-group mb-3">
