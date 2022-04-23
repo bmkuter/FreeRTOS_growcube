@@ -19,7 +19,15 @@ export default {
             }
         }
     },
-    mounted() {
+    created() {
+        this.data = {
+            system_name: this.system_name,
+            delay_off: this.delay_off,
+            delay_on: this.delay_on,
+            pulse_width: this.pulse_width
+        }
+    },
+    beforeUpdate() {
         this.data = {
             system_name: this.system_name,
             delay_off: this.delay_off,
