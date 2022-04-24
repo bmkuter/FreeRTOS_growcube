@@ -9,6 +9,8 @@ export default {
     },
     data() {
         // This is the state of the component. 
+        // We have 5 + 1 systems:
+        // source, drain, food, air, LED, and the "root" system: id, delay_on, delay_off, pulse_width
         return {
            data: {
                 "id": 2,
@@ -44,36 +46,37 @@ export default {
         }
     },
     beforeMount() {
-        // This is a alifecycle function. It is called everytime the component "mounts"
-        // A mount == reload, essentially
+        // This is a lifecycle function. It is called everytime the component "mounts"
+        // https://vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram
         // Same old http request as in window.onload except...
         axios.get(`http://192.168.50.36:5000/device/${this.data.id}`).then(response => {
             console.log(this.data)
             this.data = response.data;
-            console.log(this.data)
         });
     },
     methods: {
         submit(e) {
             //Use our saved data object and send it to the API (We don't use any DOM access here)
-            console.log(e)
             axios.post(`http://192.168.50.36:5000/device/${this.data.id}`, this.data).then(response => {
-                console.log(response);
+                // validate response
             });
         },
-        update(value) {
-            console.log('Update:');
-            console.log(value);
+        update(event) {
+            // event: { system_name: string, field: ['pulse_width'|'delay_on'|'delay_off'], value: Number }
             if(value.system_name === "root") {
-                this.data.delay_off = value.value
-                this.data.delay_on = value.delay_on
-                this.data.pulse_width = value.pulse_width
+                this.data[event.field] = event.value;
             } else {
-                this.data[value.system_name][value.update] = value.value;
+                // If it's not the root, then add the system
+                this.data[event.system_name][event.field] = event.value;
             }
         }
     },
     // template is the HTML part of the component. @submit.prevent="submit" does just what you think, prevents default submit. @click is a vue wrapper for onclick and submit is the name of the function being called on click
+    // prop (input/param) syntax for child component(s)
+    // :prop-name="variable"
+
+    // event syntax
+    // @event:name="handler"
     template: `
     <form @submit.prevent="submit">
         <system-component system_name="root" 
