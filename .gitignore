@@ -1,8 +1,0 @@
-*.o
-*.d
-*.db
-Database/
-Release/
-.vs/
-__vm/
-Debug/
