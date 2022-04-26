@@ -21,7 +21,40 @@ Next I will be making my own custom PCB for the ESP32 through Altium CircuitMake
 The databasing itself is handled through a python-flask deployment. The server can be accessed by connected devices through port `5000` to interact with the database. A growpod connects to `http://192.168.4.1:5000/query_device/<device_number>` and queries the database for its settings. To improve efficiency, the growpod only reinitilaises itself if the database has changed through a quick comparison-hash to the previous database state. A user interacts with the database through `http://192.168.4.1:5000/set_device`. Dynamics and more features to be added. The python application and server must be on to enable this functionality, but once the growpods are initialised, the program can be put to sleep. Growpods maintain their own climates and schedules, only using the program to adjust the general parameters of the system but not maintain them. That logic is built into the growpods themselves. 
 
 # JSON & Package Structure
-(ADD IMAGE FOR JSON STRUCTURE TO AND FROM DB)
+JSON sent from server to growpod:
+```
+{
+    "id": 1,
+    "delay_on": 1000,
+    "delay_off": 1000,
+    "pulse_width": 255,
+    "source": {
+        "delay_on": 0,
+        "delay_off": 0,
+        "pulse_width": 0
+    },
+    "drain": {
+        "delay_on": 0,
+        "delay_off": 0,
+        "pulse_width": 0
+    },
+    "food": {
+        "delay_on": 0,
+        "delay_off": 0,
+        "pulse_width": 0
+    },
+    "air": {
+        "delay_on": 0,
+        "delay_off": 0,
+        "pulse_width": 0
+    },
+    "LED": {
+        "delay_on": 0,
+        "delay_off": 0,
+        "pulse_width": 0
+    }
+}
+```
 
 # To Load
 Download \*.h, \*.cpp, \*.ino files into an arduino-flavoured editor. Ensure ESP32 files are downloaded and installed. I suggest: https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/. 
