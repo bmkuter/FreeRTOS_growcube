@@ -15,6 +15,8 @@ The new iteration of the firmware is utilising FreeRTOS. Threads alleviate many 
 # The Microcontroller
 The microcontroller has been changed from the Teensy 4.1 to the ESP32. The Teensy, while powerful and with its own threading API, lacked the smaller formfactor desired for the next enclosure revision, and more importantly lacked internal WiFi/BLE. The latter is critical for future scalability. Fortunately, the ESP32 has its own flavour of FreeRTOS baked in, with ample documentation. 
 
+Next I will be making my own custom PCB for the ESP32 through Altium CircuitMaker. Because the ESP32 allows for PWM control on any GPIO pin, the swap from the Teensy 4.1 to the ESP32 in regards to the hardware layer should be straight forward. 
+
 # The Python in a Flask
 The databasing itself is handled through a python-flask deployment. The server can be accessed by connected devices through port `5000` to interact with the database. A growpod connects to `http://192.168.4.1:5000/query_device/<device_number>` and queries the database for its settings. To improve efficiency, the growpod only reinitilaises itself if the database has changed through a quick comparison-hash to the previous database state. A user interacts with the database through `http://192.168.4.1:5000/set_device`. Dynamics and more features to be added. 
 
