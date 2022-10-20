@@ -1,0 +1,16 @@
+*.o
+*.d
+*.db
+Database/
+Release/
+.vs/
+__vm/
+Debug/
+start
+
+#MAC
+.DS_Store
+*._*
+
+#Node
+node_modules/

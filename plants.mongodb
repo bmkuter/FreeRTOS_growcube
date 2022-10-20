@@ -1,0 +1,65 @@
+// MongoDB Playground
+// To disable this template go to Settings | MongoDB | Use Default Template For Playground.
+// Make sure you are connected to enable completions and to be able to run a playground.
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Select the database to use.
+use('grow_cube');
+
+// The drop() command destroys all data from a collection.
+// Make sure you run it against the correct database and collection.
+db.plants.drop();
+
+// Insert a few documents into the sales collection.
+db.plants.insertMany([
+  { '_id': 1, 'genus': 'Capsicum', 'species': 'C. Chinense', 'commonName': '7 Pot Yellow', 'plantingDate': new Date('2022-06-01T08:00:00Z'), 'lifecycleStages': [{ 'stage': 'flowering', 'startDate': new Date('2022-08-08T08:00:00Z'), 'endDate': new Date('2022-09-30T08:00:00Z') },{ 'stage': 'fruiting', 'startDate': new Date('2022-10-01T08:00:00Z'), 'endDate': null }], 'requiredConditions': {'light': 24, 'temperature': 75, 'humidity': 70, 'soilMoisture': 50, 'atmosphere': 300} },
+  { '_id': 2, 'genus': 'Capsicum', 'species': 'C. Chinense', 'commonName': 'Carolina Reaper', 'plantingDate': new Date('2022-06-05T08:00:00Z'), 'lifecycleStages': [{ 'stage': 'flowering', 'startDate': new Date('2022-08-10T08:00:00Z'), 'endDate': new Date('2022-10-01T08:00:00Z') },{ 'stage': 'fruiting', 'startDate': new Date('2022-10-02T08:00:00Z'), 'endDate':  new Date('2022-10-28T08:00:00Z') }], 'requiredConditions': {'light': 12, 'temperature': 72, 'humidity': 65, 'soilMoisture': 30, 'atmosphere': 330} },
+]);
+
+db.settings.insertOne({
+  'system': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  },
+  'source': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  },
+  'drain': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  },
+  'food': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  },
+  'air': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  },
+  'LED': {
+    'delay_on': 0,
+    'delay_off': 0,
+    'pulse_width': 0,
+  }
+})
+
+// Run a find command to view items sold on April 4th, 2014.
+db.plants.find({ plantingDate: { $gte: new Date('2022-05-20'), $lt: new Date('2022-10-31') } });
+db.settings.find();
+
+// Build an aggregation to view total sales for each product in 2014.
+// const aggregation = [
+//   { $match: { date: { $gte: new Date('2014-01-01'), $lt: new Date('2015-01-01') } } },
+//   { $group: { _id: '$item', totalSaleAmount: { $sum: { $multiply: [ '$price', '$quantity' ] } } } }
+// ];
+
+// Run the aggregation and open a cursor to the results.
+// Use toArray() to exhaust the cursor to return the whole result set.
+// You can use hasNext()/next() to iterate through the cursor page by page.
+// db.sales.aggregate(aggregation);

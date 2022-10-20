@@ -1,0 +1,32 @@
+<!-- This is the main HTML file for the app. 
+  -- Use normal HTML tags in here if you want...
+  -- For a pure Vue app, don't edit this.
+  -->
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <!-- axios is HTTP library -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<!-- This imports Vue -->
+<script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+</script>
+
+<!-- This creates a root element with id=app -->
+<div id="app"></div>
+
+<!-- This creates the Vue app and mounts it on the root element, #app -->
+<script type="module">
+  import { createApp } from 'vue';
+  // This imports the app component from ./app
+  import app from './app.js';
+
+  createApp(app).mount('#app')
+</script>
